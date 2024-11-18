@@ -96,15 +96,22 @@ Prototype and build IoT systems without setting up servers or developing web sof
 #include <WiFi.h>
 
 #include "ThingSpeak.h" // always include thingspeak header file after other header files and custom macros
-#define ldr_pin 23
-char ssid[] = "iQOO z7S 5G";   // your network SSID (name) 
+#define ldr_pin 34
+char ssid[] = "iQOO Z7S 55";   // your network SSID (name) 
 char pass[] = "12345678";   // your network password
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 WiFiClient  client;
 
-unsigned long myChannelNumber =  2715702;
+unsigned long myChannelNumber =  2487109;
 const int ChannelField = 1;
-const char * myWriteAPIKey = "2IONIL1ZG7OXGZ83";
+const char * myWriteAPIKey = "4TL0XDHT9DBX1YD4";
+
+int ldrValue = 0;       // Variable to store raw analog value
+int lightPercentage = 0;
+
+const int darkValue = 4095; // Analog value in complete darkness
+const int brightValue = 0;  
+
 
 void setup() 
 {
@@ -131,20 +138,18 @@ void loop()
   }
 
   /* LDR sensor */
-  int ldr_value= digitalRead(ldr_pin);      //assign value of LDR sensor to a temporary variable
-  Serial.println("Intensity="); //print on serial monitor using ""
-  Serial.println(ldr_value);         //display output on serial monitor
+  int ldrValue= analogRead(ldr_pin);  
   
-  int x = ThingSpeak.writeField(myChannelNumber, ChannelField, ldr_value, myWriteAPIKey);
-  if(x == 200)
-{
-    Serial.println("Channel update successful.");
-  }
-  else
-{
-    Serial.println("Problem updating channel. HTTP error code " + String(x));
-  }
-   delay(20000); // Wait 20 seconds to update the channel again
+  lightPercentage = map(ldrValue, darkValue, brightValue, 0, 100);
+
+  // Constrain the percentage to 0-100 range
+  lightPercentage = constrain(lightPercentage, 0, 100);
+  Serial.println("Intensity="); //print on serial monitor using ""
+  Serial.println(lightPercentage);    
+  Serial.println("%");     //display output on serial monitor
+  
+  ThingSpeak.writeField(myChannelNumber, ChannelField, lightPercentage, myWriteAPIKey);
+  delay(5000); 
 }
 ```
 # CIRCUIT DIAGRAM:
